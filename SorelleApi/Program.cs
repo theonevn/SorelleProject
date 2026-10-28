@@ -11,6 +11,8 @@ builder.Services.AddSingleton<Db>();
 builder.Services.AddScoped<ProdutoRepository>();
 builder.Services.AddScoped<UsuarioRepository>();
 builder.Services.AddSingleton<TokenService>();
+builder.Services.AddScoped<PedidoRepository>();
+Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 var jwt = builder.Configuration.GetSection("Jwt");
 
