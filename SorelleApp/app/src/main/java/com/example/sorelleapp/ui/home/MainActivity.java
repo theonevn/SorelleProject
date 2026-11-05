@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
                 R.id.tvDestaquePreco2, R.id.tvDestaqueArvores2);
 
         tvSair.setOnClickListener(v -> {
-            UsuarioStorage.setLogado(this, false);
+            UsuarioStorage.limparSessao(this);
             Intent intent = new Intent(this, LoginActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);

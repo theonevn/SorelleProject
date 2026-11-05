@@ -3,6 +3,7 @@ package com.example.sorelleapp.ui.login;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Patterns;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -10,18 +11,28 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.sorelleapp.ui.home.MainActivity;
 import com.example.sorelleapp.R;
 import com.example.sorelleapp.data.UsuarioStorage;
+import com.example.sorelleapp.data.api.ApiClient;
+import com.example.sorelleapp.data.api.dto.AuthResponse;
+import com.example.sorelleapp.data.api.dto.ErroResponse;
+import com.example.sorelleapp.data.api.dto.LoginRequest;
+import com.example.sorelleapp.data.api.dto.RegistroRequest;
+import com.example.sorelleapp.ui.home.MainActivity;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.gson.Gson;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
     private boolean modoCadastro = false;
 
-    private TextInputLayout tilEmail, tilSenha;
-    private TextInputEditText etEmail, etSenha;
+    private TextInputLayout tilNome, tilEmail, tilSenha;
+    private TextInputEditText etNome, etEmail, etSenha;
     private TextView tvTitulo, tvSubtitulo, tvAlternar;
     private Button btnEntrar;
 
@@ -37,8 +48,10 @@ public class LoginActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
 
+        tilNome = findViewById(R.id.tilNome);
         tilEmail = findViewById(R.id.tilEmail);
         tilSenha = findViewById(R.id.tilSenha);
+        etNome = findViewById(R.id.etNome);
         etEmail = findViewById(R.id.etEmail);
         etSenha = findViewById(R.id.etSenha);
         tvTitulo = findViewById(R.id.tvTitulo);
@@ -54,8 +67,7 @@ public class LoginActivity extends AppCompatActivity {
 
         tvAlternar.setOnClickListener(v -> {
             modoCadastro = !modoCadastro;
-            tilEmail.setError(null);
-            tilSenha.setError(null);
+            limparErros();
             atualizarModo();
         });
 
@@ -67,6 +79,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void atualizarModo() {
+        tilNome.setVisibility(modoCadastro ? View.VISIBLE : View.GONE);
+
         if (modoCadastro) {
             tvTitulo.setText("Criar conta");
             tvSubtitulo.setText("Cadastre-se para acompanhar seu impacto na floresta.");
@@ -80,13 +94,23 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    private void limparErros() {
+        tilNome.setError(null);
+        tilEmail.setError(null);
+        tilSenha.setError(null);
+    }
+
     private void tentarEntrar() {
+        String nome = etNome.getText() == null ? "" : etNome.getText().toString().trim();
         String email = etEmail.getText() == null ? "" : etEmail.getText().toString().trim();
         String senha = etSenha.getText() == null ? "" : etSenha.getText().toString();
 
-        tilEmail.setError(null);
-        tilSenha.setError(null);
+        limparErros();
 
+        if (modoCadastro && nome.length() < 2) {
+            tilNome.setError("Informe seu nome");
+            return;
+        }
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             tilEmail.setError("E-mail inválido");
             return;
@@ -96,21 +120,75 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        if (modoCadastro) {
-            UsuarioStorage.salvarConta(this, email, senha);
-            UsuarioStorage.setLogado(this, true);
-            abrirHome();
-        } else {
-            if (!UsuarioStorage.existeConta(this)) {
-                tilEmail.setError("Nenhuma conta criada ainda. Toque em Criar conta.");
-                return;
+        setCarregando(true);
+
+        Call<AuthResponse> chamada = modoCadastro
+                ? ApiClient.get().registrar(new RegistroRequest(nome, email, senha))
+                : ApiClient.get().login(new LoginRequest(email, senha));
+
+        chamada.enqueue(new Callback<AuthResponse>() {
+            @Override
+            public void onResponse(Call<AuthResponse> call, Response<AuthResponse> resposta) {
+                setCarregando(false);
+
+                if (resposta.isSuccessful() && resposta.body() != null) {
+                    UsuarioStorage.salvarSessao(LoginActivity.this, resposta.body());
+                    abrirHome();
+                } else {
+                    mostrarErro(resposta);
+                }
             }
-            if (UsuarioStorage.validar(this, email, senha)) {
-                UsuarioStorage.setLogado(this, true);
-                abrirHome();
-            } else {
+
+            @Override
+            public void onFailure(Call<AuthResponse> call, Throwable t) {
+                setCarregando(false);
+                Toast.makeText(LoginActivity.this,
+                        "Não foi possível conectar ao servidor. Confira se a API está ligada.",
+                        Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void mostrarErro(Response<?> resposta) {
+        switch (resposta.code()) {
+            case 401:
                 tilSenha.setError("E-mail ou senha incorretos");
+                break;
+            case 409:
+                tilEmail.setError(lerErro(resposta, "Já existe uma conta com esse e-mail."));
+                break;
+            case 400:
+                Toast.makeText(this, lerErro(resposta, "Dados inválidos."),
+                        Toast.LENGTH_LONG).show();
+                break;
+            default:
+                Toast.makeText(this, "Erro no servidor (código " + resposta.code() + ")",
+                        Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private String lerErro(Response<?> resposta, String padrao) {
+        try {
+            if (resposta.errorBody() != null) {
+                ErroResponse erro = new Gson().fromJson(
+                        resposta.errorBody().string(), ErroResponse.class);
+                if (erro != null && erro.getErro() != null) {
+                    return erro.getErro();
+                }
             }
+        } catch (Exception ignorada) {
+            // se não der pra ler a mensagem, usa a padrão
+        }
+        return padrao;
+    }
+
+    private void setCarregando(boolean carregando) {
+        btnEntrar.setEnabled(!carregando);
+        tvAlternar.setEnabled(!carregando);
+        if (carregando) {
+            btnEntrar.setText("Aguarde...");
+        } else {
+            btnEntrar.setText(modoCadastro ? "Criar conta" : "Entrar");
         }
     }
 
