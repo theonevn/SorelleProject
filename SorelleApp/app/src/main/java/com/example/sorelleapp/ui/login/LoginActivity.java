@@ -142,8 +142,9 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<AuthResponse> call, Throwable t) {
                 setCarregando(false);
+                android.util.Log.e("LOGIN", "Falha na chamada", t);
                 Toast.makeText(LoginActivity.this,
-                        "Não foi possível conectar ao servidor. Confira se a API está ligada.",
+                        "Falha: " + t.getClass().getSimpleName() + " - " + t.getMessage(),
                         Toast.LENGTH_LONG).show();
             }
         });

@@ -10,7 +10,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ApiClient {
 
     // 10.0.2.2 = o seu PC, visto de dentro do emulador. A porta é a da API.
-    private static final String BASE_URL = "http://localhost:5126/";
+    private static final String BASE_URL = "http://127.0.0.1:5126/";
 
     private static ApiService service;
 

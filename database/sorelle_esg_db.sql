@@ -161,5 +161,12 @@ BEGIN
     FROM Certificados
     WHERE Usuario_ID = @Usuario_ID
     ORDER BY Data_Emissao DESC;
+
+
+CREATE UNIQUE INDEX UX_Certificados_Pedido ON Certificados (Pedido_ID);
+CREATE INDEX IX_Pedidos_Usuario ON Pedidos (Usuario_ID);
+CREATE INDEX IX_Certificados_Usuario ON Certificados (Usuario_ID);
+CREATE INDEX IX_ItensPedido_Pedido ON ItensPedido (Pedido_ID);
+
 END;
 GO
