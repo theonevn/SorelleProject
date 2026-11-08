@@ -37,6 +37,15 @@ public class ProdutosActivity extends AppCompatActivity {
         });
         rvProdutos.setAdapter(adapter);
 
+        Catalogo.sincronizar(this, sucesso -> {
+            if (isFinishing() || isDestroyed()) return;
+            adapter.atualizar();
+            if (!sucesso) {
+                Toast.makeText(this, "Sem conexão com o servidor. Mostrando os produtos salvos.",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+
         btnSacola.setOnClickListener(v ->
                 startActivity(new Intent(ProdutosActivity.this, SacolaActivity.class)));
     }

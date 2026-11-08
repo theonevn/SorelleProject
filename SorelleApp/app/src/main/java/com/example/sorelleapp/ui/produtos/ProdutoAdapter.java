@@ -22,6 +22,9 @@ public class ProdutoAdapter extends RecyclerView.Adapter<ProdutoAdapter.ProdutoV
     public interface OnAdicionarClickListener {
         void onAdicionar(Produto produto);
     }
+    public void atualizar() {
+        notifyDataSetChanged();
+    }
 
     private final List<Produto> produtos;
     private final OnAdicionarClickListener listener;

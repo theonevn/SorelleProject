@@ -2,10 +2,14 @@ package com.example.sorelleapp.data.api;
 
 import com.example.sorelleapp.data.api.dto.AuthResponse;
 import com.example.sorelleapp.data.api.dto.LoginRequest;
+import com.example.sorelleapp.data.api.dto.ProdutoResponse;
 import com.example.sorelleapp.data.api.dto.RegistroRequest;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
 
 public interface ApiService {
@@ -15,4 +19,7 @@ public interface ApiService {
 
     @POST("api/auth/login")
     Call<AuthResponse> login(@Body LoginRequest corpo);
+
+    @GET("api/produtos")
+    Call<List<ProdutoResponse>> produtos();
 }

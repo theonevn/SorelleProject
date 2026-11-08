@@ -12,6 +12,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.sorelleapp.R;
+import com.example.sorelleapp.data.Catalogo;
 import com.example.sorelleapp.data.UsuarioStorage;
 import com.example.sorelleapp.data.api.ApiClient;
 import com.example.sorelleapp.data.api.dto.AuthResponse;
@@ -39,6 +40,7 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Catalogo.carregarDoCache(this);
 
         if (UsuarioStorage.isLogado(this)) {
             abrirHome();

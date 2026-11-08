@@ -18,6 +18,7 @@ import com.example.sorelleapp.ui.login.LoginActivity;
 import com.example.sorelleapp.ui.produtos.ProdutosActivity;
 import com.example.sorelleapp.ui.sacola.SacolaActivity;
 
+import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
@@ -37,13 +38,12 @@ public class MainActivity extends AppCompatActivity {
         btnImpacto.setOnClickListener(v -> abrir(ImpactoActivity.class));
         btnSacola.setOnClickListener(v -> abrir(SacolaActivity.class));
 
-        preencherDestaque(Catalogo.getProdutos().get(0),
-                R.id.cardDestaque1, R.id.ivDestaque1, R.id.tvDestaqueNome1,
-                R.id.tvDestaquePreco1, R.id.tvDestaqueArvores1);
-
-        preencherDestaque(Catalogo.getProdutos().get(1),
-                R.id.cardDestaque2, R.id.ivDestaque2, R.id.tvDestaqueNome2,
-                R.id.tvDestaquePreco2, R.id.tvDestaqueArvores2);
+        preencherDestaques();
+        Catalogo.sincronizar(this, sucesso -> {
+            if (!isFinishing() && !isDestroyed()) {
+                preencherDestaques();
+            }
+        });
 
         tvSair.setOnClickListener(v -> {
             UsuarioStorage.limparSessao(this);
@@ -51,6 +51,19 @@ public class MainActivity extends AppCompatActivity {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         });
+    }
+
+    private void preencherDestaques() {
+        List<Produto> lista = Catalogo.getProdutos();
+        if (lista.size() < 2) return;
+
+        preencherDestaque(lista.get(0),
+                R.id.cardDestaque1, R.id.ivDestaque1, R.id.tvDestaqueNome1,
+                R.id.tvDestaquePreco1, R.id.tvDestaqueArvores1);
+
+        preencherDestaque(lista.get(1),
+                R.id.cardDestaque2, R.id.ivDestaque2, R.id.tvDestaqueNome2,
+                R.id.tvDestaquePreco2, R.id.tvDestaqueArvores2);
     }
 
     private void preencherDestaque(Produto p, int idCard, int idImagem, int idNome,
