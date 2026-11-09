@@ -36,7 +36,8 @@ public class CertificadoAdapter extends RecyclerView.Adapter<CertificadoAdapter.
     public void onBindViewHolder(@NonNull CertificadoViewHolder holder, int position) {
         Certificado certificado = certificados.get(position);
 
-        holder.tvDetalhe.setText(certificado.getData() + " · " + certificado.getNome()
+        holder.tvDetalhe.setText(certificado.getCodigo() + " · " + certificado.getData()
+                + " · " + certificado.getNome()
                 + " · +" + certificado.getArvores()
                 + (certificado.getArvores() == 1 ? " árvore" : " árvores"));
 

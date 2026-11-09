@@ -1,6 +1,9 @@
 package com.example.sorelleapp.data.api;
 
 import com.example.sorelleapp.data.api.dto.AuthResponse;
+import com.example.sorelleapp.data.api.dto.CompraRequest;
+import com.example.sorelleapp.data.api.dto.CompraResponse;
+import com.example.sorelleapp.data.api.dto.ImpactoResponse;
 import com.example.sorelleapp.data.api.dto.LoginRequest;
 import com.example.sorelleapp.data.api.dto.ProdutoResponse;
 import com.example.sorelleapp.data.api.dto.RegistroRequest;
@@ -10,6 +13,7 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.POST;
 
 public interface ApiService {
@@ -22,4 +26,11 @@ public interface ApiService {
 
     @GET("api/produtos")
     Call<List<ProdutoResponse>> produtos();
+
+    @POST("api/compras")
+    Call<CompraResponse> comprar(@Header("Authorization") String token,
+                                 @Body CompraRequest corpo);
+
+    @GET("api/impacto")
+    Call<ImpactoResponse> impacto(@Header("Authorization") String token);
 }
