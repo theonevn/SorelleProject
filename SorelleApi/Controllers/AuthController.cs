@@ -43,8 +43,7 @@ public class AuthController : ControllerBase
         var hash = _hasher.HashPassword(usuario, senha);
         usuario.Id = await _repo.CriarAsync(nome, email, hash);
 
-        return Ok(new AuthResponse(_tokens.Gerar(usuario), usuario.Id, usuario.Nome, usuario.Email));
-    }
+return Ok(new AuthResponse(_tokens.Gerar(usuario), usuario.Id, usuario.Nome, usuario.Email, usuario.Perfil));    }
 
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponse>> Login(LoginRequest req)
@@ -59,8 +58,7 @@ public class AuthController : ControllerBase
         if (resultado == PasswordVerificationResult.Failed)
             return Unauthorized(new { erro = "E-mail ou senha incorretos." });
 
-        return Ok(new AuthResponse(_tokens.Gerar(usuario), usuario.Id, usuario.Nome, usuario.Email));
-    }
+return Ok(new AuthResponse(_tokens.Gerar(usuario), usuario.Id, usuario.Nome, usuario.Email, usuario.Perfil));    }
 
     [Authorize]
     [HttpGet("eu")]

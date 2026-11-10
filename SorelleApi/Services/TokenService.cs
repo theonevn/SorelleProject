@@ -26,7 +26,8 @@ public class TokenService
             {
                 new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, usuario.Email),
-                new Claim("nome", usuario.Nome)
+                new Claim("nome", usuario.Nome),
+                new Claim("role", usuario.Perfil)
             }),
             Expires = DateTime.UtcNow.AddMinutes(minutos),
             Issuer = _config["Jwt:Issuer"],

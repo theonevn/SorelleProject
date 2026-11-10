@@ -17,7 +17,7 @@ public class UsuarioRepository
         using var conn = _db.CreateConnection();
 
         const string sql = @"
-            SELECT ID AS Id, Nome, Email, Senha
+            SELECT ID AS Id, Nome, Email, Senha, Perfil
             FROM Usuarios
             WHERE Email = @Email";
 
