@@ -1,5 +1,7 @@
 package com.example.sorelleapp.ui.login;
 
+import static com.example.sorelleapp.ui.ApiHelper.lerErro;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Patterns;
@@ -146,57 +148,58 @@ public class LoginActivity extends AppCompatActivity {
                 setCarregando(false);
                 android.util.Log.e("LOGIN", "Falha na chamada", t);
                 Toast.makeText(LoginActivity.this,
-                        "Falha: " + t.getClass().getSimpleName() + " - " + t.getMessage(),
+                        "Não foi possível conectar ao servidor. Verifique sua conexão e " +
+                                "tente novamente.",
                         Toast.LENGTH_LONG).show();
+            }
+
+            private void mostrarErro(Response<?> resposta) {
+                switch (resposta.code()) {
+                    case 401:
+                        tilSenha.setError("E-mail ou senha incorretos");
+                        break;
+                    case 409:
+                        tilEmail.setError(lerErro(resposta, "Já existe uma conta com esse " +
+                                "e-mail."));
+                        break;
+                    case 400:
+                        Toast.makeText(LoginActivity.this, lerErro(resposta, "Dados inválidos."),
+                                Toast.LENGTH_LONG).show();
+                        break;
+                    default:
+                        Toast.makeText(LoginActivity.this, "Erro no servidor (código " + resposta.code() + ")",
+                                Toast.LENGTH_LONG).show();
+                }
+            }
+
+            private String lerErro(Response<?> resposta, String padrao) {
+                try {
+                    if (resposta.errorBody() != null) {
+                        ErroResponse erro = new Gson().fromJson(
+                                resposta.errorBody().string(), ErroResponse.class);
+                        if (erro != null && erro.getErro() != null) {
+                            return erro.getErro();
+                        }
+                    }
+                } catch (Exception ignorada) {
+                }
+                return padrao;
             }
         });
     }
 
-    private void mostrarErro(Response<?> resposta) {
-        switch (resposta.code()) {
-            case 401:
-                tilSenha.setError("E-mail ou senha incorretos");
-                break;
-            case 409:
-                tilEmail.setError(lerErro(resposta, "Já existe uma conta com esse e-mail."));
-                break;
-            case 400:
-                Toast.makeText(this, lerErro(resposta, "Dados inválidos."),
-                        Toast.LENGTH_LONG).show();
-                break;
-            default:
-                Toast.makeText(this, "Erro no servidor (código " + resposta.code() + ")",
-                        Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private String lerErro(Response<?> resposta, String padrao) {
-        try {
-            if (resposta.errorBody() != null) {
-                ErroResponse erro = new Gson().fromJson(
-                        resposta.errorBody().string(), ErroResponse.class);
-                if (erro != null && erro.getErro() != null) {
-                    return erro.getErro();
+            private void setCarregando(boolean carregando) {
+                btnEntrar.setEnabled(!carregando);
+                tvAlternar.setEnabled(!carregando);
+                if (carregando) {
+                    btnEntrar.setText("Aguarde...");
+                } else {
+                    btnEntrar.setText(modoCadastro ? "Criar conta" : "Entrar");
                 }
             }
-        } catch (Exception ignorada) {
-            // se não der pra ler a mensagem, usa a padrão
-        }
-        return padrao;
-    }
 
-    private void setCarregando(boolean carregando) {
-        btnEntrar.setEnabled(!carregando);
-        tvAlternar.setEnabled(!carregando);
-        if (carregando) {
-            btnEntrar.setText("Aguarde...");
-        } else {
-            btnEntrar.setText(modoCadastro ? "Criar conta" : "Entrar");
+            private void abrirHome() {
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+            }
         }
-    }
-
-    private void abrirHome() {
-        startActivity(new Intent(this, MainActivity.class));
-        finish();
-    }
-}

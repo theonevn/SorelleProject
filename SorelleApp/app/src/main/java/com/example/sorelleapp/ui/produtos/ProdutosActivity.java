@@ -41,6 +41,7 @@ public class ProdutosActivity extends AppCompatActivity {
             if (isFinishing() || isDestroyed()) return;
             adapter.atualizar();
             if (!sucesso) {
+                android.util.Log.w("CATALOGO", "Sincronização falhou: " + Catalogo.ultimoErro);
                 Toast.makeText(this, "Sem conexão com o servidor. Mostrando os produtos salvos.",
                         Toast.LENGTH_SHORT).show();
             }

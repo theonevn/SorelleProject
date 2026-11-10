@@ -22,6 +22,7 @@ import com.example.sorelleapp.data.api.dto.ItemCompraRequest;
 import com.example.sorelleapp.model.Produto;
 import com.example.sorelleapp.ui.ApiHelper;
 import com.example.sorelleapp.ui.impacto.ImpactoActivity;
+import com.example.sorelleapp.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -109,8 +110,10 @@ public class SacolaActivity extends AppCompatActivity {
                     @Override
                     public void onFailure(Call<CompraResponse> call, Throwable t) {
                         setEnviando(false);
+                        android.util.Log.e("COMPRA", "Falha ao enviar a compra", t);
                         Toast.makeText(SacolaActivity.this,
-                                "Falha: " + t.getClass().getSimpleName() + " - " + t.getMessage(),
+                                "Sem conexão com o servidor. A compra não foi enviada "
+                                        + "e sua sacola foi mantida.",
                                 Toast.LENGTH_LONG).show();
                     }
                 });

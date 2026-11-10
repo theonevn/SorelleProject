@@ -61,6 +61,11 @@ public class SacolaAdapter extends RecyclerView.Adapter<SacolaAdapter.SacolaView
             atualizar();
             listener.onMudou();
         });
+        holder.btnAdicionar.setOnClickListener(v -> {
+            Sacola.getInstancia().adicionar(produto);
+            atualizar();
+            listener.onMudou();
+        });
     }
 
     @Override
@@ -70,7 +75,7 @@ public class SacolaAdapter extends RecyclerView.Adapter<SacolaAdapter.SacolaView
 
     static class SacolaViewHolder extends RecyclerView.ViewHolder {
         TextView tvNome, tvQuantidade, tvPreco;
-        Button btnRemover;
+        Button btnRemover, btnAdicionar;
 
         SacolaViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -78,6 +83,7 @@ public class SacolaAdapter extends RecyclerView.Adapter<SacolaAdapter.SacolaView
             tvQuantidade = itemView.findViewById(R.id.tvQuantidade);
             tvPreco = itemView.findViewById(R.id.tvPreco);
             btnRemover = itemView.findViewById(R.id.btnRemover);
+            btnAdicionar = itemView.findViewById(R.id.btnAdicionar);
         }
     }
 }
