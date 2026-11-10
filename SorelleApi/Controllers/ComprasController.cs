@@ -41,9 +41,9 @@ public class ComprasController : ControllerBase
             var resposta = await _repo.RegistrarCompraAsync(usuarioId.Value, nome, req.Itens);
             return Ok(resposta);
         }
-        catch (SqlException ex) when (ex.Number == 50001)
+                catch (SqlException ex) when (ex.Number == 50001 || ex.Number == 50002)
         {
-            return BadRequest(new { erro = "Nenhum produto válido na compra." });
+            return BadRequest(new { erro = ex.Message });
         }
     }
 }

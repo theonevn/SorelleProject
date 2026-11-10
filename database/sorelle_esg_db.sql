@@ -1,3 +1,11 @@
+-- PROTEÇÃO: se o banco já existe, este script não altera nada
+IF DB_ID(N'SorelleESG_DB') IS NOT NULL
+BEGIN
+    PRINT 'O banco SorelleESG_DB ja existe. Nada foi alterado.';
+    SET NOEXEC ON;
+END
+GO
+
 IF DB_ID(N'SorelleESG_DB') IS NULL
     CREATE DATABASE SorelleESG_DB;
 GO
@@ -59,6 +67,13 @@ CREATE TABLE HistoricoPrecos (
 );
 GO
 
+-- ÍNDICES: um certificado por pedido e consultas por usuário/pedido mais rápidas
+CREATE UNIQUE INDEX UX_Certificados_Pedido ON Certificados (Pedido_ID);
+CREATE INDEX IX_Pedidos_Usuario ON Pedidos (Usuario_ID);
+CREATE INDEX IX_Certificados_Usuario ON Certificados (Usuario_ID);
+CREATE INDEX IX_ItensPedido_Pedido ON ItensPedido (Pedido_ID);
+GO
+
 INSERT INTO Produtos (Nome, Descricao, Preco, Qtd_Arvores_Impacto, Tag_Eco) VALUES
 ('Sérum Açaí', 'Revitalização profunda com bioativos puros da floresta Amazônica.', 89.90, 1, 'Vegano'),
 ('Creme Castanha', 'Nutrição intensa e hidratação prolongada para a pele.', 55.90, 3, 'Reciclado'),
@@ -101,13 +116,21 @@ BEGIN
 
         DECLARE @Valor DECIMAL(10,2), @Arvores INT, @PedidoID INT, @Codigo VARCHAR(50);
 
+        IF NOT EXISTS (SELECT 1 FROM @Itens)
+            THROW 50001, 'Nenhum item válido na compra.', 1;
+
+        IF EXISTS (
+            SELECT 1
+            FROM @Itens i
+            LEFT JOIN Produtos p ON p.ID = i.Produto_ID AND p.Ativo = 1
+            WHERE p.ID IS NULL
+        )
+            THROW 50002, 'A compra contém produto inexistente ou inativo.', 1;
+
         SELECT @Valor = SUM(p.Preco * i.Quantidade),
                @Arvores = SUM(p.Qtd_Arvores_Impacto * i.Quantidade)
         FROM @Itens i
-        JOIN Produtos p ON p.ID = i.Produto_ID AND p.Ativo = 1;
-
-        IF @Valor IS NULL
-            THROW 50001, 'Nenhum item válido na compra.', 1;
+        JOIN Produtos p ON p.ID = i.Produto_ID;
 
         INSERT INTO Pedidos (Usuario_ID, Valor_Total, Total_Arvores)
         VALUES (@Usuario_ID, @Valor, @Arvores);
@@ -116,7 +139,7 @@ BEGIN
         INSERT INTO ItensPedido (Pedido_ID, Produto_ID, Quantidade, Preco_Unitario)
         SELECT @PedidoID, p.ID, i.Quantidade, p.Preco
         FROM @Itens i
-        JOIN Produtos p ON p.ID = i.Produto_ID AND p.Ativo = 1;
+        JOIN Produtos p ON p.ID = i.Produto_ID;
 
         SET @Codigo = 'SOR-' + CONVERT(VARCHAR(8), GETDATE(), 112) + '-'
                       + RIGHT('00000' + CAST(@PedidoID AS VARCHAR(10)), 5);
@@ -161,12 +184,7 @@ BEGIN
     FROM Certificados
     WHERE Usuario_ID = @Usuario_ID
     ORDER BY Data_Emissao DESC;
-
-
-CREATE UNIQUE INDEX UX_Certificados_Pedido ON Certificados (Pedido_ID);
-CREATE INDEX IX_Pedidos_Usuario ON Pedidos (Usuario_ID);
-CREATE INDEX IX_Certificados_Usuario ON Certificados (Usuario_ID);
-CREATE INDEX IX_ItensPedido_Pedido ON ItensPedido (Pedido_ID);
-
 END;
+GO
+SET NOEXEC OFF;
 GO
