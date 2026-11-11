@@ -18,8 +18,10 @@ CREATE TABLE Usuarios (
     Nome VARCHAR(100) NOT NULL,
     Email VARCHAR(100) UNIQUE NOT NULL,
     Senha VARCHAR(255) NOT NULL, -- Armazenará o hash da senha
+    Perfil VARCHAR(20) NOT NULL DEFAULT 'Cliente' CHECK (Perfil IN ('Cliente','Admin')),
     DataCadastro DATETIME NOT NULL DEFAULT GETDATE()
 );
+
 
 CREATE TABLE Produtos (
     ID INT IDENTITY(1,1) PRIMARY KEY,
