@@ -15,6 +15,7 @@ public class ApiHelper {
 
     public static void voltarAoLogin(Activity activity, String mensagem) {
         UsuarioStorage.limparSessao(activity);
+        com.example.sorelleapp.data.Sacola.getInstancia().limpar();
         if (mensagem != null) {
             Toast.makeText(activity, mensagem, Toast.LENGTH_LONG).show();
         }
@@ -33,7 +34,6 @@ public class ApiHelper {
                 }
             }
         } catch (Exception ignorada) {
-            // se não der pra ler a mensagem, usa a padrão
         }
         return padrao;
     }

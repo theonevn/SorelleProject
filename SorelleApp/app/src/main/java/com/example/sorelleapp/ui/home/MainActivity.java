@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.sorelleapp.R;
 import com.example.sorelleapp.data.Catalogo;
+import com.example.sorelleapp.data.Sacola;
 import com.example.sorelleapp.data.UsuarioStorage;
 import com.example.sorelleapp.model.Produto;
 import com.example.sorelleapp.ui.impacto.ImpactoActivity;
@@ -46,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         tvSair.setOnClickListener(v -> {
+            Sacola.getInstancia().limpar();
             UsuarioStorage.limparSessao(this);
             Intent intent = new Intent(this, LoginActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
